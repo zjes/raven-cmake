@@ -1,0 +1,17 @@
+@PACKAGE_INIT@
+
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/CMakeFiles")
+    set(RAVEN_CMAKE_DIR "@CMAKE_CURRENT_SOURCE_DIR@")
+else()
+    set(RAVEN_CMAKE_DIR "@PACKAGE_CMAKE_INSTALL_DIR@/@target@")
+endif()
+
+set(RAVEN_CMAKE_DIR ${RAVEN_CMAKE_DIR} CACHE INTERNAL "" FORCE)
+
+include(${RAVEN_CMAKE_DIR}/scripts/config.cmake)
+include(${RAVEN_CMAKE_DIR}/scripts/raven.cmake)
+include(${RAVEN_CMAKE_DIR}/scripts/package.cmake)
+
+if (NOT RAVEN_CMAKE_FOUND)
+  set(RAVEN_CMAKE_FOUND ON CACHE INTERNAL "" FORCE)
+endif ()
