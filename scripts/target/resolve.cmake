@@ -15,7 +15,9 @@ endfunction()
 ##############################################################################################################
 
 macro(resolve_pkg lib)
-    pkg_check_modules(${lib}_prefix REUIRED QUIET IMPORTED_TARGET ${lib})
+    set(ENV{PKG_CONFIG_PATH} "${RUNTIME_PREFIX}/lib/pkgconfig")
+
+    pkg_check_modules(${lib}_prefix REQUIRED QUIET IMPORTED_TARGET ${lib})
     if (${lib}_prefix_FOUND)
         add_library(${lib} INTERFACE)
         target_link_libraries(${lib} INTERFACE PkgConfig::${lib}_prefix)
@@ -91,7 +93,7 @@ macro(resolve lib)
     # Bad, very bad... try out as package
     if (NOT TARGET ${lib})
         string(FIND ${lib} "::" isnamespace)
-        if (NOT isnamespace EQUAL -1)
+        if (isnamespace EQUAL -1)
             resolve_pkg(${lib})
         endif()
     endif()
