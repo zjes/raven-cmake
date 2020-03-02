@@ -26,7 +26,6 @@ macro(${CMAKE_PRODUCT_PREFIX}_define_component component)
             endif()
             set(shlibsCnt "${shlibsCnt}lib${target} ${PROJECT_VERSION_MAJOR} ${args_NAME} (>=${PROJECT_VERSION})\n")
         endforeach()
-        message("?????${CMAKE_CURRENT_BINARY_DIR}/${component}/shlibs")
         file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${component}/shlibs" ${shlibsCnt})
     endif()
 
@@ -117,13 +116,15 @@ macro(${CMAKE_PRODUCT_PREFIX}_pack)
 
         set_default(${comp})
 
-        set(description ${args_DESCRIPTION})
+        #set(description ${args_DESCRIPTION})
+        set(summary_description ${args_DESCRIPTION})
 
         if (EXISTS "${RAVEN_CMAKE_DIR}/scripts/templates/component.cmake.in")
             set(componentin "${RAVEN_CMAKE_DIR}/scripts/templates/component.cmake.in")
         else()
             set(componentin "${CMAKE_CURRENT_LIST_DIR}/scripts/templates/component.cmake.in")
         endif()
+        message("?????${componentin}")
 
         if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${comp}/shlibs")
             list(APPEND CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_BINARY_DIR}/${comp}/shlibs")

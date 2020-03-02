@@ -17,7 +17,7 @@ macro(${CMAKE_PRODUCT_PREFIX}_target type name)
     cmake_parse_arguments(args
         ""
         "OUTPUT"
-        "SOURCES;USES;INCLUDE_DIRS;PUBLIC;PREPROCESSOR;FLAGS;CMAKE"
+        "SOURCES;USES;INCLUDE_DIRS;PUBLIC;PREPROCESSOR;FLAGS;CMAKE;CONFIGS"
         ${ARGN}
     )
 
@@ -25,7 +25,7 @@ macro(${CMAKE_PRODUCT_PREFIX}_target type name)
         set(args_OUTPUT ${RUNTIME_PREFIX})
     endif()
 
-    create_target(${name} ${type} OUTPUT ${args_OUTPUT} SOURCES ${args_SOURCES} PUBLIC ${args_PUBLIC} CMAKE ${args_CMAKE})
+    create_target(${name} ${type} OUTPUT ${args_OUTPUT} SOURCES ${args_SOURCES} PUBLIC ${args_PUBLIC} CMAKE ${args_CMAKE} CONFIGS ${args_CONFIGS})
     setup_includes(${name} args_INCLUDE_DIRS)
     setup_version(${name})
     parse_using(${name} args_USES)
