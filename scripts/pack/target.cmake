@@ -57,7 +57,7 @@ function(install_target name component target)
     else()
         install(
             TARGETS ${target}
-            LIBRARY DESTINATION ${LIBS_INSTALL_DIR}    COMPONENT ${component} NAMELINK_SKIP
+            LIBRARY DESTINATION ${LIB_INSTALL_DIR}     COMPONENT ${component} NAMELINK_SKIP
             RUNTIME DESTINATION ${RUNTIME_INSTALL_DIR} COMPONENT ${component}
         )
     endif()

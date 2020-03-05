@@ -124,7 +124,6 @@ macro(${CMAKE_PRODUCT_PREFIX}_pack)
         else()
             set(componentin "${CMAKE_CURRENT_LIST_DIR}/scripts/templates/component.cmake.in")
         endif()
-        message("?????${componentin}")
 
         if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${comp}/shlibs")
             list(APPEND CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_BINARY_DIR}/${comp}/shlibs")
