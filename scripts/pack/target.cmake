@@ -16,7 +16,7 @@ endfunction()
 function(install_target name component target)
     if(${component} MATCHES "^.*[\\-]?(dev)$")
         get_target_property(confFile ${target} INTERFACE_CONF_FILE)
-        get_target_property(verFile ${target} INTERFACE_VERSION_FILE)
+        get_target_property(verFile  ${target} INTERFACE_VERSION_FILE)
 
         install(FILES
             ${confFile}
@@ -30,16 +30,23 @@ function(install_target name component target)
         install(TARGETS ${target}
             ARCHIVE DESTINATION ${ARCHIVE_INSTALL_DIR} COMPONENT ${component}
             LIBRARY DESTINATION ${LIB_INSTALL_DIR}     COMPONENT ${component} NAMELINK_ONLY
-            RUNTIME DESTINATION ${BIN_INSTALL_DIR}     COMPONENT ${component}
+            #RUNTIME DESTINATION ${BIN_INSTALL_DIR}     COMPONENT ${component}
         )
 
         # install target output
+#        install(TARGETS ${target}
+#            EXPORT  "${target}-targets"
+#            ARCHIVE DESTINATION ${ARCHIVE_INSTALL_DIR}
+#            LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+#            RUNTIME DESTINATION ${BIN_INSTALL_DIR}
+#            COMPONENT ${component}
+#        )
         install(TARGETS ${target}
             EXPORT  "${target}-targets"
-            ARCHIVE DESTINATION ${ARCHIVE_INSTALL_DIR}
-            LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-            RUNTIME DESTINATION ${BIN_INSTALL_DIR}
-            COMPONENT ${component}
+            ARCHIVE DESTINATION ${ARCHIVE_INSTALL_DIR} COMPONENT ${component}
+            LIBRARY DESTINATION ${LIB_INSTALL_DIR}  NAMELINK_COMPONENT ${component}
+            #RUNTIME DESTINATION ${BIN_INSTALL_DIR}
+            #COMPONENT ${component}
         )
 
         # install export cmake target
@@ -49,8 +56,8 @@ function(install_target name component target)
         )
 
         if ("${type}" STREQUAL "INTERFACE_LIBRARY")
-            install_from_target(INTERFACE_PUBLIC_HEADERS ${INCLUDE_INSTALL_DIR} ${target}_props ${component})
-            install_from_target(INTERFACE_CMAKE          ${CMAKE_INSTALL_DIR}/${target} ${target} ${component})
+            install_from_target(INTERFACE_HEADERS ${INCLUDE_INSTALL_DIR} ${target} ${component})
+            install_from_target(INTERFACE_CMAKE   ${CMAKE_INSTALL_DIR}/${target} ${target} ${component})
         else()
             install_from_target(PUBLIC_HEADERS ${INCLUDE_INSTALL_DIR} ${target} ${component})
         endif()
