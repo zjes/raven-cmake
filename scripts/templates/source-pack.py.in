@@ -8,8 +8,13 @@ PKG_FILENAME      = "@CPACK_PACKAGE_FILE_NAME@"
 PKG_VERSION       = "@FULL_PROJECT_VERSION@"
 PKG_MAINTAINER    = "@CPACK_PACKAGE_CONTACT@"
 PKG_BUILD_DEPENDS = "@PKG_BUILD_DEPENDS@".replace(";", ", ")
-PKG_ARCH          = "@CPACK_DEBIAN_PACKAGE_ARCHITECTURE@"
 PKG_SOURCE_PATH   = "@CMAKE_CURRENT_SOURCE_DIR@"
+
+PKG_DESCRIPTION   = "@CPACK_PACKAGE_DESCRIPTION_SUMMARY@"
+PKG_ARCH          = "@CPACK_DEBIAN_PACKAGE_ARCHITECTURE@"
+PKG_PACK_DIR      = "@PKG_PACK_DIR@"
+PKG_DEPENDS       = "@PKG_DEPENDS@"
+
 
 def changelog():
     dateStr = datetime.now().strftime("%a, %d %b %Y %H:%M:%S +0000")
@@ -18,49 +23,72 @@ def changelog():
         f"  * packaging\n\n"
         f" -- {PKG_MAINTAINER}  {dateStr}"
     )
-    with open("debian/changelog", "w") as out:
+    with open(PKG_PACK_DIR+"/debian/changelog", "w") as out:
         out.write(log)
 
 def rules():
     rules = (
         "#!/usr/bin/make -f\n"
         "\n"
+        "override_dh_auto_configure:\n"
+        "\tdh_auto_configure -- -DCMAKE_BUILD_TYPE=Release\n"
+        "\n"
+        "override_dh_builddeb:\n"
+        @PKG_RUN_CPACK@
+        "\n"
         "%:\n"
-        "       $(info *** dh $(@) ***)\n"
-        "       dh $(@) --buildsystem=cmake"
+        "\t$(info *** dh $(@) ***)\n"
+        "\tdh $@ --builddirectory=build --buildsystem=cmake\n"
     )
-    with open("debian/rules", "w") as out:
+    with open(PKG_PACK_DIR+"/debian/rules", "w") as out:
         out.write(rules)
 
 def createControl():
     control = (
-        f"Format: 1.0\n"
         f"Source: {PKG_NAME}\n"
-        f"Architecture: {PKG_ARCH}\n"
-        f"Version: {PKG_VERSION}\n"
+        f"Section: devel\n"
+        f"Priority: optional\n"
         f"Maintainer: {PKG_MAINTAINER}\n"
-        f"Standards-Version: {PKG_VERSION}\n"
         f"Build-Depends: {PKG_BUILD_DEPENDS}\n"
+        @PKG_COMPONENTS@
     )
 
-    with open("debian/control", "w") as out:
+    with open(PKG_PACK_DIR+"/debian/control", "w") as out:
         out.write(control)
 
+def compat():
+    with open(PKG_PACK_DIR+"/debian/compat", "w") as out:
+        out.write("10")
+
+    with open(PKG_PACK_DIR+"/debian/format", "w") as out:
+        out.write("3.0 (quilt)")
+
+    with open(PKG_PACK_DIR+"/debian/source/format", "w") as out:
+        out.write("1.0")
+
+
 def filterFnc(info):
-    print(os.path.basename(info.name))
     base = os.path.basename(info.name)
     if fnmatch.fnmatch(base, "CMakeLists.txt.*") or base.startswith(".git"):
-        print("skip")
         return None
     else:
         return info
 
 def pack():
     with tarfile.open(PKG_NAME+".tar.gz", "w:gz") as tar:
-        tar.add(PKG_SOURCE_PATH, filter=filterFnc)
+        tar.add(PKG_SOURCE_PATH, arcname=".", filter=filterFnc)
+
+def copySources():
+    with tarfile.open(PKG_NAME+".tar.gz", "r:gz") as tar:
+        tar.extractall(path=PKG_PACK_DIR)
 
 if __name__ == "__main__":
+    os.makedirs(PKG_PACK_DIR+"/debian", exist_ok=True)
+    os.makedirs(PKG_PACK_DIR+"/debian/source", exist_ok=True)
+
+    pack()
+    copySources()
     changelog()
     rules()
     createControl()
-    pack()
+    compat()

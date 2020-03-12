@@ -81,8 +81,6 @@ macro(${CMAKE_PRODUCT_PREFIX}_pack)
 
     set(_CPACK_GENERATOR ${CPACK_GENERATOR})
 
-#    prepare_targets(${args_NAME} ${component} args_TARGETS)
-
     set(LD_LIBRARY_PATH)
     if(args_LD_LIBRARY_PATH)
         set(LD_LIBRARY_PATH ${args_LD_LIBRARY_PATH})
@@ -91,6 +89,8 @@ macro(${CMAKE_PRODUCT_PREFIX}_pack)
     set(CPACK_PACKAGE_CONTACT             ${args_CONTACT})
     set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${args_DESCRIPTION})
     set(PKG_NAME                          ${args_PKG_NAME})
+    set(PKG_COMPONENTS)
+    set(PKG_RUN_CPACK)
 
     foreach(comp ${args_COMPONENTS})
         set(ravenComponent "raven_component_${comp}")
@@ -101,6 +101,7 @@ macro(${CMAKE_PRODUCT_PREFIX}_pack)
         get_target_property(ldpath    "${ravenComponent}" "PKG_LDPATHES")
         get_target_property(targets   "${ravenComponent}" "PKG_TARGETS")
         get_target_property(buildDep  "${ravenComponent}" "PKG_BUILD_DEPENDS")
+        get_target_property(depends   "${ravenComponent}" "PKG_DEPENDS")
 
         set(FULL_PROJECT_VERSION ${PROJECT_VERSION})
         if(VERSION_EXTRA)
@@ -121,8 +122,9 @@ macro(${CMAKE_PRODUCT_PREFIX}_pack)
         if(isDev)
             set(CPACK_PACKAGE_FILE_NAME "${args_PKG_NAME}-dev")
             message(STATUS "Configure devel (${comp}) version of the package ${CPACK_PACKAGE_FILE_NAME}")
+            set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "any")
         else()
-            set(CPACK_PACKAGE_FILE_NAME "${args_PKG_NAME}_${FULL_PROJECT_VERSION}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
+            set(CPACK_PACKAGE_FILE_NAME "${args_PKG_NAME}-${FULL_PROJECT_VERSION}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
             message(STATUS "Configure runtime (${comp}) version of the package ${CPACK_PACKAGE_FILE_NAME}")
         endif()
 
@@ -147,18 +149,29 @@ macro(${CMAKE_PRODUCT_PREFIX}_pack)
         endif()
 
         set(PKG_BUILD_DEPENDS           ${buildDep})
+        set(PKG_DEPENDS                 ${depends})
         set(CPACK_DEB_COMPONENT_INSTALL ${ravenComponent})
+        set(PKG_PACK_DIR                "${args_PKG_NAME}-${FULL_PROJECT_VERSION}")
+        set(PKG_PACK_CONFIG_NAME        "${comp}.cmake")
 
-        configure_file(${templates}/component.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${comp}.cmake" @ONLY)
-        configure_file(${templates}/source-pack.py.in "${CMAKE_CURRENT_BINARY_DIR}/source-pack-${comp}.py" @ONLY)
+        configure_file(${templates}/component.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${PKG_PACK_CONFIG_NAME}" @ONLY)
+        configure_file(${templates}/component.py.in "${CMAKE_CURRENT_BINARY_DIR}/${comp}.py" @ONLY)
+        configure_file(${templates}/component-cpack.py.in "${CMAKE_CURRENT_BINARY_DIR}/${comp}-cpack.py" @ONLY)
 
-        add_custom_target(${comp}
-            COMMAND python3 ${CMAKE_CURRENT_BINARY_DIR}/source-pack-${comp}.py
-            COMMAND dpkg-buildpackage -S
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        )
+        file(READ "${CMAKE_CURRENT_BINARY_DIR}/${comp}.py" pack)
+        set(PKG_COMPONENTS "${PKG_COMPONENTS}\"\\n\"\n${pack}")
 
+        file(READ "${CMAKE_CURRENT_BINARY_DIR}/${comp}-cpack.py" pack)
+        set(PKG_RUN_CPACK "${PKG_RUN_CPACK}\n${pack}")
     endforeach()
+
+    configure_file(${templates}/source-pack.py.in "${CMAKE_CURRENT_BINARY_DIR}/source-pack.py" @ONLY)
+    add_custom_target("pack-${args_PKG_NAME}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${PKG_PACK_DIR}
+        COMMAND python3 source-pack.py
+        COMMAND cd ${PKG_PACK_DIR} && dpkg-buildpackage -S
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
 
     install_component(args_COMPONENTS)
 endmacro()

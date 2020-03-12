@@ -28,9 +28,9 @@ raven_target(interface ${PROJECT_NAME}
 ##############################################################################################################
 
 raven_define_component(${PROJECT_NAME}-dev
-    TARGETS ${PROJECT_NAME}
-    DEPENDS cmake pkg-config
-    BUILD_DEPENDS "cmake (>= 3.10);pkg-config"
+    TARGETS       ${PROJECT_NAME}
+    BUILD_DEPENDS "cmake (>= 3.10), pkg-config, debhelper (>= 12)"
+    DEPENDS       "cmake (>= 3.10), pkg-config, debhelper (>= 12)"
 )
 
 raven_pack(
