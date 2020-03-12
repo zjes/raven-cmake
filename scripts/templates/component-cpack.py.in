@@ -1,0 +1,1 @@
+        "\tcpack --config build/@PKG_PACK_CONFIG_NAME@\n"

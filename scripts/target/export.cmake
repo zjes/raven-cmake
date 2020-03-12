@@ -31,10 +31,18 @@ function(export_target target)
         COMPATIBILITY SameMajorVersion
     )
 
+    if (EXISTS "${RAVEN_CMAKE_DIR}/scripts/templates/component.cmake.in")
+        set(templates "${RAVEN_CMAKE_DIR}/scripts/templates")
+    else()
+        set(templates "${CMAKE_CURRENT_LIST_DIR}/scripts/templates")
+    endif()
+
     set_target_properties(${target} PROPERTIES
         INTERFACE_CONF_FILE ${exportCmakeConfig}
         INTERFACE_VERSION_FILE ${exportVersionFile}
+        INTERFACE_PKG_TEMPLATE ${templates}/pkgconfig.in
     )
+
 endfunction()
 
 ##############################################################################################################

@@ -22,18 +22,20 @@ raven_target(interface ${PROJECT_NAME}
         scripts/target/target.cmake
         scripts/target/uses.cmake
         scripts/target/version.cmake
+        scripts/templates/*
 )
 
 ##############################################################################################################
 
 raven_define_component(${PROJECT_NAME}-dev
-    NAME    raven-cmake
-    TARGETS ${PROJECT_NAME}
-    DEPENDS cmake
+    TARGETS       ${PROJECT_NAME}
+    BUILD_DEPENDS "cmake (>= 3.10), pkg-config, debhelper (>= 12)"
+    DEPENDS       "cmake (>= 3.10), pkg-config, debhelper (>= 12)"
 )
 
 raven_pack(
-    CONTACT     "zjesclean@gmail.com"
+    PKG_NAME    raven-cmake
+    CONTACT     "zjes <zjesclean@gmail.com>"
     COMPONENTS  ${PROJECT_NAME}-dev
     DESCRIPTION "Simple cmake wrapper to easy target creation, packing"
 )

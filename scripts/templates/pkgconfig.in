@@ -1,0 +1,9 @@
+libdir=@LIB_INSTALL_DIR@
+includedir=@INCLUDE_INSTALL_DIR@
+
+Name:        "@PROJECT_NAME@"
+Description: "@CPACK_PACKAGE_DESCRIPTION_SUMMARY@"
+Version:     "@PROJECT_VERSION@"
+Libs:        -L${libdir}
+Cflags:      -I${includedir}
+

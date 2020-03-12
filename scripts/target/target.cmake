@@ -48,14 +48,13 @@ macro(create_target name type output)
     elseif("${type}" STREQUAL "interface")
         # Setup source library target
         add_library(${name} INTERFACE)
-        add_custom_target(${name}_props
+        add_custom_target(${name}-props
             SOURCES ${arg_SOURCES}
                     ${arg_PUBLIC}
                     ${arg_CMAKE}
                     ${arg_CONFIGS}
         )
-        set_target_properties(${name}_props PROPERTIES INTERFACE_COMPILE_FEATURES -std=c++17)
-        #target_compile_features(${name}_props INTERFACE -std=c++17)
+        set_target_properties(${name}-props PROPERTIES INTERFACE_COMPILE_FEATURES -std=c++17)
         if(arg_SOURCES)
             set_target_properties(${name} PROPERTIES
                 INTERFACE_HEADERS "${arg_SOURCES}"
