@@ -133,6 +133,12 @@ function(setup_includes name includes)
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
         )
     endif()
+
+    if (NOT "${${includes}}" STREQUAL "")
+        target_include_directories(${name} PRIVATE
+            ${${includes}}
+        )
+    endif()
 endfunction()
 
 ##############################################################################################################
