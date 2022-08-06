@@ -1,0 +1,24 @@
+cmake_minimum_required(VERSION 3.10)
+include(ExternalProject)
+
+project(@NAME@-build)
+
+ExternalProject_Add(@NAME@-build
+    GIT_REPOSITORY @GIT@
+    GIT_TAG        @VERSION@
+    GIT_SHALLOW    FALSE
+    SOURCE_DIR     "@SRC_DIR@"
+    BINARY_DIR     "@BUILD_DIR@"
+    PREFIX         "@INSTALL_PREFIX@"
+    CMAKE_ARGS     -DCMAKE_INSTALL_PREFIX=@INSTALL_PREFIX@
+                   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                   -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                   "-DCMAKE_GENERATOR=${CMAKE_GENERATOR}"
+                   -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+                   -DCMAKE_INSTALL_MESSAGE=LAZY
+                   -DCATCH_BUILD_TESTING=OFF
+                   -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                   "-DCMAKE_CXX_FLAGS=@EXTERN_CXXFLAGS@"
+                   "-DCMAKE_C_FLAGS=@EXTERN_CXXFLAGS@"
+                   @EXTERN_CMAKE_FLAGS@
+)

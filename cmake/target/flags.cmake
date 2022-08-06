@@ -3,24 +3,13 @@
 function(set_cppflags name flags)
     get_target_property(type ${name} TYPE)
     if (NOT "${type}" STREQUAL "INTERFACE_LIBRARY")
-        target_compile_options(${name} PRIVATE -fPIC -Wall -Wextra -pedantic -Wnon-virtual-dtor -Werror
-                                               -Wno-gnu-zero-variadic-macro-arguments
-                                               -Wno-unused-command-line-argument)
+        separate_arguments(args NATIVE_COMMAND ${WARNINGS_STR})
+        target_compile_options(${name} PRIVATE ${args})
+        set_target_properties(${name} PROPERTIES CXX_STANDARD 17)
     endif()
 
     if (${flags})
         target_compile_options(${name} PRIVATE ${${flags}})
-    endif()
-endfunction()
-
-##############################################################################################################
-
-function(qt_options name options)
-    if (${options})
-        find_package(Qt5 COMPONENTS Core)
-        foreach(opt ${${options}})
-            set_property(TARGET ${name} PROPERTY ${opt} ON)
-        endforeach()
     endif()
 endfunction()
 

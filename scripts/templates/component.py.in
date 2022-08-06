@@ -1,4 +1,0 @@
-        "Package: @CPACK_PACKAGE_FILE_NAME@\n"
-        "Architecture: @CPACK_DEBIAN_PACKAGE_ARCHITECTURE@\n"
-        "Depends: @PKG_DEPENDS@\n"
-        "Description: @CPACK_PACKAGE_DESCRIPTION_SUMMARY@\n"

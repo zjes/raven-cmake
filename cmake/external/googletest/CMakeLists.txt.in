@@ -1,0 +1,19 @@
+cmake_minimum_required(VERSION 3.13)
+
+project(googletest-download NONE)
+
+# Use master if no version has been specified
+if(NOT GOOGLETEST_VERSION)
+  set(GOOGLETEST_VERSION release-1.10.0)
+endif()
+
+include(ExternalProject)
+ExternalProject_Add(googletest
+  URL               "https://codeload.github.com/google/googletest/tar.gz/${GOOGLETEST_VERSION}"
+  SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/googletest-src"
+  BINARY_DIR        "${CMAKE_CURRENT_BINARY_DIR}/googletest-build"
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND     ""
+  INSTALL_COMMAND   ""
+  TEST_COMMAND      ""
+  )

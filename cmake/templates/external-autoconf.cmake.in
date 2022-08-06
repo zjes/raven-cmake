@@ -1,0 +1,24 @@
+cmake_minimum_required(VERSION 3.10)
+include(ExternalProject)
+
+project(@NAME@-build)
+
+ExternalProject_Add(@NAME@-build
+    GIT_REPOSITORY    "@GIT@"
+    GIT_TAG           "@VERSION@"
+    GIT_SHALLOW       FALSE
+    SOURCE_DIR        "@SRC_DIR@"
+    BINARY_DIR        "@BUILD_DIR@"
+    PREFIX            "@INSTALL_PREFIX@"
+    CONFIGURE_COMMAND autoreconf -i "@SRC_DIR@/@SRC_PREFIX@" COMMAND "@SRC_DIR@/@SRC_PREFIX@/configure"
+                        CXX=${CMAKE_CXX_COMPILER}
+                        CC=${CMAKE_C_COMPILER}
+                        PKG_CONFIG_PATH=@INSTALL_PREFIX@/lib/pkgconfig:@PKG_PATH@
+                        "CXXFLAGS=-I@INSTALL_PREFIX@/include @EXTERN_CXXFLAGS@"
+                        "LDFLAGS=-L@INSTALL_PREFIX@/lib @EXTERN_LDFLAGS@"
+                        --prefix=@INSTALL_PREFIX@
+                        @EXTRA_ARGS@
+    BUILD_COMMAND     make -j @NBJOBS@
+    INSTALL_COMMAND   make install
+)
+

@@ -1,43 +1,33 @@
-cmake_minimum_required(VERSION 3.10)
-cmake_policy(VERSION 3.10)
+cmake_minimum_required(VERSION 3.13)
+cmake_policy(VERSION 3.13)
 
 ##############################################################################################################
-project(raven-cmake VERSION 1.0)
+project(raven-cmake
+    VERSION     1.0
+    DESCRIPTION "Raven cmake support"
+)
 ##############################################################################################################
-include(scripts/raven.cmake)
-include(scripts/package.cmake)
+include(cmake/raven-cmake.cmake)
 ##############################################################################################################
 
 raven_target(interface ${PROJECT_NAME}
     CMAKE
-        scripts/config.cmake
-        scripts/raven.cmake
-        scripts/package.cmake
+        cmake/external.cmake
+        cmake/raven-cmake.cmake
+        cmake/warnings.cmake
 
-        scripts/pack/target.cmake
-        scripts/pack/defaults.cmake
-        scripts/target/export.cmake
-        scripts/target/flags.cmake
-        scripts/target/resolve.cmake
-        scripts/target/target.cmake
-        scripts/target/uses.cmake
-        scripts/target/version.cmake
-        scripts/templates/*
+        cmake/target/export.cmake
+        cmake/target/flags.cmake
+        cmake/target/resolve.cmake
+        cmake/target/target.cmake
+        cmake/target/uses.cmake
+        cmake/target/version.cmake
+        cmake/target/install.cmake
+        cmake/target/properties.cmake
+        cmake/target/testing.cmake
+        cmake/templates/package.pc.in
+        cmake/templates/external-autoconf.cmake.in
+        cmake/templates/external-cmake.cmake.in
+
+        cmake/external/*
 )
-
-##############################################################################################################
-
-raven_define_component(${PROJECT_NAME}-dev
-    TARGETS       ${PROJECT_NAME}
-    BUILD_DEPENDS "cmake (>= 3.10), pkg-config, debhelper (>= 12)"
-    DEPENDS       "cmake (>= 3.10), pkg-config, debhelper (>= 12)"
-)
-
-raven_pack(
-    PKG_NAME    raven-cmake
-    CONTACT     "zjes <zjesclean@gmail.com>"
-    COMPONENTS  ${PROJECT_NAME}-dev
-    DESCRIPTION "Simple cmake wrapper to easy target creation, packing"
-)
-
-##############################################################################################################
