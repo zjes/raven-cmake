@@ -1,33 +1,45 @@
 include(${CMAKE_CURRENT_LIST_DIR}/resolve.cmake)
 
-function(parse_using name uses public)
-    resolve_libs(${uses})
-    resolve_libs(${public})
+function(set_dependencies name uses public)
+    if (NOT "${uses}" STREQUAL "")
+        resolve_libs(${uses})
+    endif()
+    if (NOT "${public}" STREQUAL "")
+        resolve_libs(${public})
+    endif()
 
-    foreach(lib ${${uses}})
+    foreach(lib ${uses})
         add_include_from_lib(${name} ${lib} PRIVATE)
     endforeach()
 
-    foreach(lib ${${public}})
+    foreach(lib ${public})
         add_include_from_lib(${name} ${lib} PUBLIC)
     endforeach()
 
     get_target_property(type ${name} TYPE)
 
     if ("${type}" STREQUAL "INTERFACE_LIBRARY")
-        target_link_libraries(${name} INTERFACE
-            ${${uses}}
-            ${${public}}
-        )
-    else()
-        if (NOT "${${public}}" STREQUAL "")
-            target_link_libraries(${name} PUBLIC
-                ${${public}}
+        if (NOT "${uses}" STREQUAL "")
+            target_link_libraries(${name} INTERFACE
+                ${uses}
             )
         endif()
-        target_link_libraries(${name} PRIVATE
-            ${${uses}}
-        )
+        if (NOT "${public}" STREQUAL "")
+            target_link_libraries(${name} INTERFACE
+                ${public}
+            )
+        endif()
+    else()
+        if (NOT "${public}" STREQUAL "")
+            target_link_libraries(${name} PUBLIC
+                ${public}
+            )
+        endif()
+        if (NOT "${uses}" STREQUAL "")
+            target_link_libraries(${name} PRIVATE
+                ${uses}
+            )
+        endif()
     endif()
 endfunction()
 

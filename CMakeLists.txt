@@ -10,11 +10,13 @@ project(raven-cmake
 include(cmake/raven-cmake.cmake)
 ##############################################################################################################
 
-raven_target(interface ${PROJECT_NAME}
+raven_target(${PROJECT_NAME} INTERFACE
     CMAKE
         cmake/external.cmake
         cmake/raven-cmake.cmake
         cmake/warnings.cmake
+        cmake/cmake.py
+        cmake/translate.py
 
         cmake/target/export.cmake
         cmake/target/flags.cmake

@@ -27,7 +27,7 @@ endmacro()
 
 ##############################################################################################################
 
-macro(resolve_lib lib)
+function(resolve_lib lib)
     if (NOT COMPILER_PATHS)
         compiler_search_dirs()
     endif()
@@ -59,55 +59,83 @@ macro(resolve_lib lib)
             endif()
         endif()
     endif()
-endmacro()
+endfunction()
 
 ##############################################################################################################
 
-macro(resolve lib)
+function(resolve lib)
     cmake_parse_arguments(arg
         "NOFATAL"
-        ""
+        "MIN_VERSION;MAX_VERSION;VERSION;TARGET_NAME"
         ""
         ${ARGN}
     )
-    if (NOT TARGET ${lib})
+
+    if (arg_MIN_VERSION)
+        set(${lib}_VERSION_MIN ${arg_MIN_VERSION})
+    endif()
+    if (arg_MAX_VERSION)
+        set(${lib}_VERSION_MAX ${arg_MIN_VERSION})
+    endif()
+    if (arg_VERSION)
+        set(version ${arg_VERSION})
+    endif()
+
+    set(targetName ${lib})
+    if (arg_TARGET_NAME)
+        set(targetName ${arg_TARGET_NAME})
+    endif()
+
+    if (NOT TARGET ${targetName})
         if (${lib}_DIR)
-            find_package(${lib} QUIET PATHS ${CMAKE_INSTALL_PREFIX} NO_DEFAULT_PATH)
+            find_package(${lib} ${version} QUIET PATHS ${CMAKE_INSTALL_PREFIX} NO_DEFAULT_PATH)
         endif()
         # try out our runtime path
-        if (NOT TARGET ${lib})
+        if (NOT TARGET ${targetName})
             set(${lib}_DIR ${CMAKE_INSTALL_PREFIX}/lib/cmake/${lib})
-            find_package(${lib} QUIET PATHS ${CMAKE_INSTALL_PREFIX} NO_DEFAULT_PATH)
+            find_package(${lib} ${version} QUIET PATHS ${CMAKE_INSTALL_PREFIX} NO_DEFAULT_PATH)
             unset(${lib}_DIR)
         endif()
-        if (NOT TARGET ${lib})
+        if (NOT TARGET ${targetName})
             set(${lib}_DIR ${CMAKE_INSTALL_PREFIX}/lib64/cmake/${lib})
-            find_package(${lib} QUIET PATHS ${CMAKE_INSTALL_PREFIX} NO_DEFAULT_PATH)
+            find_package(${lib} ${version} QUIET PATHS ${CMAKE_INSTALL_PREFIX} NO_DEFAULT_PATH)
             unset(${lib}_DIR)
         endif()
 
         # if lib is with namespace or components
-        if (NOT TARGET ${lib})
+        if (NOT TARGET ${targetName})
             string(REPLACE "::" ";" split ${lib})
             list(LENGTH split len)
 
             if (len EQUAL 2)
                 list(GET split 0 lname)
                 list(GET split 1 lcomp)
-                find_package(${lname} QUIET COMPONENTS ${lcomp} PATHS ${CMAKE_INSTALL_PREFIX}/lib/ ${CMAKE_INSTALL_PREFIX}/lib64/)
+                if (arg_MIN_VERSION)
+                    set(${lname}_MIN_VERSION ${arg_MIN_VERSION})
+                endif()
+                if (arg_MAX_VERSION)
+                    set(${lname}_MAX_VERSION ${arg_MIN_VERSION})
+                endif()
+                if (arg_VERSION)
+                    set(version ${arg_VERSION})
+                endif()
+                find_package(${lname} ${version} QUIET COMPONENTS ${lcomp} PATHS ${CMAKE_INSTALL_PREFIX}/lib/ ${CMAKE_INSTALL_PREFIX}/lib64/)
                 if (NOT ${lname}${lcomp}_FOUND)
-                    find_package(${lname} QUIET PATHS ${CMAKE_INSTALL_PREFIX}/lib/cmake ${CMAKE_INSTALL_PREFIX}lib64/cmake)
+                    find_package(${lname} ${version} QUIET PATHS ${CMAKE_INSTALL_PREFIX}/lib/cmake ${CMAKE_INSTALL_PREFIX}lib64/cmake)
+                endif()
+                if (NOT ${lname}_FOUND)
+                    find_package(${lname} ${version} QUIET COMPONENTS ${lcomp})
                 endif()
             endif()
         endif()
 
         # try out standart search
-        if (NOT TARGET ${lib})
+        if (NOT TARGET ${targetName})
             find_package(${lib} QUIET)
         endif()
 
         # Bad, very bad... try out as package
-        if (NOT TARGET ${lib})
+        if (NOT TARGET ${targetName})
             string(FIND ${lib} "::" isnamespace)
             if (isnamespace EQUAL -1)
                 resolve_pkg(${lib})
@@ -115,13 +143,14 @@ macro(resolve lib)
         endif()
 
         # What the hell, try resolve as lib and create target manualy
-        if (NOT TARGET ${lib})
+        if (NOT TARGET ${targetName})
             string(FIND ${lib} "::" isnamespace)
             if (isnamespace EQUAL -1)
                 resolve_lib(${lib})
             endif()
         endif()
-        if (NOT TARGET ${lib} AND ENABLE_STANDALONE)
+
+        if (NOT TARGET ${targetName} AND ENABLE_STANDALONE)
             string(REPLACE "::" "-" libPath ${lib})
             if (EXISTS ${RAVEN_CMAKE_CMAKE_DIR}/external/${libPath})
                 include(${RAVEN_CMAKE_CMAKE_DIR}/external/${libPath}/build.cmake)
@@ -142,14 +171,14 @@ macro(resolve lib)
         endif()
 
         # Give up here... this package is tricky to find
-        if (NOT TARGET ${lib} AND NOT ${arg_NOFATAL})
+        if (NOT TARGET ${targetName} AND NOT ${arg_NOFATAL})
             message(FATAL_ERROR "${lib} not found")
         endif()
 
-        if (TARGET ${lib})
-            if("${lib}" STREQUAL "Catch2::Catch2")
-                get_target_property(libType ${lib} TYPE)
-                get_target_property(out ${lib} INTERFACE_INCLUDE_DIRECTORIES)
+        if (TARGET ${targetName})
+            if("${targetName}" STREQUAL "Catch2::Catch2")
+                get_target_property(libType ${targetName} TYPE)
+                get_target_property(out ${targetName} INTERFACE_INCLUDE_DIRECTORIES)
                 list(GET out 0 path)
                 if (EXISTS ${path}/../lib/cmake/Catch2/ParseAndAddCatchTests.cmake)
                     include(${path}/../lib/cmake/Catch2/ParseAndAddCatchTests.cmake)
@@ -159,8 +188,8 @@ macro(resolve lib)
             endif()
         endif()
 
-        if (TARGET ${lib})
-            get_target_property(deps ${lib} INTERFACE_LINK_LIBRARIES)
+        if (TARGET ${targetName})
+            get_target_property(deps ${targetName} INTERFACE_LINK_LIBRARIES)
             if (deps)
                 foreach(dep ${deps})
                     string(FIND ${dep} "-" pos)
@@ -171,14 +200,14 @@ macro(resolve lib)
             endif()
         endif()
     endif()
-endmacro()
+endfunction()
 
 ##############################################################################################################
 
-macro(resolve_libs libs)
+function(resolve_libs libs)
     foreach(lib ${${libs}})
         resolve(${lib})
     endforeach()
-endmacro()
+endfunction()
 
 ##############################################################################################################

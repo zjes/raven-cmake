@@ -78,8 +78,6 @@ function(export_target target)
 
         if (EXISTS ${src}/${target}.pc.in)
             configure_file(${src}/${target}.pc.in ${pgkname} @ONLY)
-        else()
-            configure_file(${templates}/package.pc.in ${pgkname} @ONLY)
         endif()
 
         # Exported pkg file
@@ -90,8 +88,6 @@ function(export_target target)
 
         if (EXISTS ${src}/${target}.pc.in)
             configure_file(${src}/${target}.pc.in ${pgkname} @ONLY)
-        else()
-            configure_file(${templates}/package.pc.in ${pgkname} @ONLY)
         endif()
 
         raven_set_custom_property(${target} CMAKE_PKG_FILE ${pgkname})
