@@ -82,13 +82,13 @@ if __name__ == "__main__":
         f.write("# Target {}\n".format(target.name))
         f.write("#######################################################################################################################\n")
 
-        type = targetType(target)
+        ttype = targetType(target)
         dependencies = collectDependecies(target)
 
         writeResolveDeps(f, dependencies)
 
         f.write("\n# create target\n")
-        f.write("raven_target({} {}\n".format(target.name, type))
+        f.write("raven_target({} {}\n".format(target.name, ttype))
         f.write("    SOURCES\n")
         for source in target.sources:
             f.write("        {}\n".format(source))
@@ -120,10 +120,21 @@ if __name__ == "__main__":
 
         f.write(")\n")
 
-        if target.tests:
+        for script in target.additionalScripts:
+            f.write("\n# Additional\n")
+            f.write(script)
+            f.write("\n")
+
+        for test in target.tests:
             f.write("\n# Testing\n\n")
-            f.write("raven_test_target({}\n".format(target.name))
+            f.write("raven_test_target({} NAME {}\n".format(test.target.name, test.name))
             f.write("    SOURCES\n")
-            for test in target.tests:
-                f.write("        {}\n".format(test))
+            for src in test.sources:
+                f.write("        {}\n".format(src))
             f.write(")\n")
+
+        for test in target.tests:
+            for script in test.additionalScripts:
+                f.write("\n# Additional\n")
+                f.write(script)
+                f.write("\n")

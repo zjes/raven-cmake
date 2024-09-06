@@ -31,6 +31,9 @@ class Config:
     def isMsvc():
         return Config.check("CMAKE_CXX_COMPILER_ID", "MSVC")
 
+    def currentPath():
+        return Config.variables["CMAKE_CURRENT_LIST_DIR"]
+
 ############################################################################################################################################
 
 class Private(object):
@@ -54,10 +57,7 @@ class Dependencies(list):
     def __init__(self):
         pass
 
-    def append(self, name, minVersion = ""):
-        super().append(Dependency(name, minVersion=minVersion))
-
-class Target:
+class BaseTarget:
     def __init__(self, name, sources = [], dependencies = [], options = [], flags = []):
         self.name = name
         self.sources = sources
@@ -66,15 +66,27 @@ class Target:
         self.options = options
         self.definitions = []
         self.flags = flags
-        os.targets.append(self)
         self.warnings = warnings()
-        self.tests = None
-
-    def addTest(self, sources = []):
-        self.tests = sources;
+        self.tests = []
+        self.additionalScripts = []
 
     def setIncludes(self, includes):
         self.includes = includes
+
+class TestTarget(BaseTarget):
+    def __init__(self, target, sources = []):
+        self.target = target
+        super().__init__(target.name+".test", sources = sources)
+
+class Target(BaseTarget):
+    def __init__(self, name, sources = [], dependencies = [], options = [], flags = []):
+        super().__init__(name, sources, dependencies, options, flags)
+        os.targets.append(self)
+
+    def addTest(self, sources = []):
+        test = TestTarget(self, sources = sources)
+        self.tests.append(test)
+        return test
 
 class SharedLib(Target):
     pass
@@ -159,6 +171,8 @@ def collectConfig(path):
                 Config.variables[name] = value.strip()
 
 collectConfig(os.path.dirname(sys.argv[2]))
+
+############################################################################################################################################
 
 def warnings():
     if (Config.isClang()):
